@@ -59,8 +59,11 @@ export function GrantActions({ grant, terms }: { grant: Grant; terms: Term[] }) 
 
   const canAttest = isInstitution && currentTerm.status === "pending";
   const canDispute = isSponsor && currentTerm.status === "attested";
-  const canRelease =
-    currentTerm.status === "attested" && Date.now() / 1000 >= currentTerm.release_after;
+  // Checking the wall clock is intentionally impure: the button must reflect
+  // whether the dispute window has closed at render time.
+  // eslint-disable-next-line react-hooks/purity
+  const nowSec = Date.now() / 1000;
+  const canRelease = currentTerm.status === "attested" && nowSec >= currentTerm.release_after;
   const canCancel = isSponsor && currentTerm.status === "pending";
 
   const button =
