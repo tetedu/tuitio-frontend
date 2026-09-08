@@ -18,7 +18,6 @@ export function GrantActions({ grant, terms }: { grant: Grant; terms: Term[] }) 
   const [pending, setPending] = useState<Pending>(null);
   const [error, setError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
-  const [needsRefresh, setNeedsRefresh] = useState(false);
 
   if (grant.status !== "active") {
     return (
@@ -126,7 +125,6 @@ export function GrantActions({ grant, terms }: { grant: Grant; terms: Term[] }) 
           Sent. The indexer picks it up within a few seconds — refresh to see the new state.
         </p>
       )}
-      {needsRefresh && !txHash && null}
       {error && <p className="text-xs text-red-400">{error}</p>}
     </div>
   );
