@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="banner.svg" alt="Tuitio" width="480">
+</p>
 
-## Getting Started
+# Tuitio · Frontend
 
-First, run the development server:
+[![CI](https://github.com/adelekevictor12/tuitio-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/adelekevictor12/tuitio-frontend/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](package.json)
+
+**Next.js web app for the Tuitio protocol.** Sponsors fund tuition grants,
+institutions attest completed terms, and every state change lands on-chain
+through the Soroban contracts via a Freighter wallet.
+
+## Pages
+
+- **Dashboard** — protocol stats, grants with escrowed amounts, live activity
+  feed from the indexer.
+- **Grant detail** — per-term timeline (pending → attested → released /
+  disputed → refunded) with role-gated actions: the institution attests, the
+  sponsor disputes or cancels, and release is permissionless once the dispute
+  window closes.
+- **Institutions** — registered schools with verification status.
+- **Fund a grant** — the sponsor flow: pick a verified institution, name the
+  student, set per-term amount and term count; the full commitment transfers
+  into escrow on submission.
+
+Writes go through the stellar-sdk contract `Client` with Freighter as the
+signer; reads come from the [`tuitio-backend`](https://github.com/adelekevictor12/tuitio-backend) REST API.
+
+## Quick start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.example .env.local   # point NEXT_PUBLIC_API_URL at the backend
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+For an instant local demo without provisioning anything, run the backend's
+devstack first (`go run ./cmd/devstack` in tuitio-backend), then this app with
+`NEXT_PUBLIC_API_URL=http://localhost:8080`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Wallet actions need the [Freighter](https://freighter.app) extension on
+Stellar testnet. The wallet must hold the tuition token (wrapped XLM via the
+SAC on testnet).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Configuration
 
-## Learn More
+See [.env.example](.env.example): backend API URL, RPC URL, network
+passphrase, deployed contract addresses, and the demo token contract/symbol.
 
-To learn more about Next.js, take a look at the following resources:
+## Related repositories
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [`tuitio-contract`](https://github.com/adelekevictor12/tuitio-contract) — the Soroban contracts (Rust)
+- [`tuitio-backend`](https://github.com/adelekevictor12/tuitio-backend) — Go indexer and REST API
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Maintainers
 
-## Deploy on Vercel
+| Name | Role | Contact |
+|---|---|---|
+| [adelekevictor12](https://github.com/adelekevictor12) | Maintainer | adelekevat@gmail.com |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contributing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Issues labeled `Stellar Wave` are part of the [Drips Wave](https://www.drips.network/wave/stellar)
+program and carry point values. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+Apache-2.0. See [LICENSE](LICENSE).
