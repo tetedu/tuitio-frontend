@@ -44,6 +44,11 @@ Wallet actions need the [Freighter](https://freighter.app) extension on
 Stellar testnet. The wallet must hold the tuition token (wrapped XLM via the
 SAC on testnet).
 
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the Vercel + Render path and the
+single-machine tunnel setup the live demo runs on.
+
 ## Configuration
 
 See [.env.example](.env.example): backend API URL, RPC URL, network
