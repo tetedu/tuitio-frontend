@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="banner.svg" alt="Tuitio" width="480">
+  <img src="public/banner.svg" alt="Tuitio" width="480">
 </p>
 
 # Tuitio · Frontend
