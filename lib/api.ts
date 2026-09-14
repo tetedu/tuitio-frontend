@@ -1,8 +1,6 @@
 // Typed client for the tuitio-backend REST API. Used by server components;
 // the backend URL is public because every endpoint is read-only.
 
-import { env } from "./env";
-
 export interface Institution {
   address: string;
   payout: string;
@@ -53,8 +51,17 @@ export interface Stats {
   terms_refunded: number;
 }
 
+// Server components call the backend directly (same host by default);
+// client components use a same-origin relative path, served by the
+// app/api/[...path] proxy. This keeps the app working no matter what public
+// URL the backend sits behind.
+const baseUrl = () =>
+  typeof window === "undefined"
+    ? (process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8080")
+    : "";
+
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${env.apiUrl}${path}`, { cache: "no-store" });
+  const res = await fetch(`${baseUrl()}${path}`, { cache: "no-store" });
   if (!res.ok) {
     throw new Error(`API ${path}: ${res.status}`);
   }
