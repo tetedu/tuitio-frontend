@@ -4,7 +4,7 @@
 
 # Tuitio · Frontend
 
-[![CI](https://github.com/adelekevictor12/tuitio-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/adelekevictor12/tuitio-frontend/actions/workflows/ci.yml)
+[![CI](https://github.com/tetedu/tuitio-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/tetedu/tuitio-frontend/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](package.json)
 
@@ -26,7 +26,7 @@ through the Soroban contracts via a Freighter wallet.
   into escrow on submission.
 
 Writes go through the stellar-sdk contract `Client` with Freighter as the
-signer; reads come from the [`tuitio-backend`](https://github.com/adelekevictor12/tuitio-backend) REST API.
+signer; reads come from the [`tuitio-backend`](https://github.com/tetedu/tuitio-backend) REST API.
 
 ## Quick start
 
@@ -51,8 +51,8 @@ passphrase, deployed contract addresses, and the demo token contract/symbol.
 
 ## Related repositories
 
-- [`tuitio-contract`](https://github.com/adelekevictor12/tuitio-contract) — the Soroban contracts (Rust)
-- [`tuitio-backend`](https://github.com/adelekevictor12/tuitio-backend) — Go indexer and REST API
+- [`tuitio-contract`](https://github.com/tetedu/tuitio-contract) — the Soroban contracts (Rust)
+- [`tuitio-backend`](https://github.com/tetedu/tuitio-backend) — Go indexer and REST API
 
 ## Maintainers
 
