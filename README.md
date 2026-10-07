@@ -20,6 +20,13 @@ through the Soroban contracts via a Freighter wallet.
   disputed → refunded) with role-gated actions: the institution attests, the
   sponsor disputes or cancels, and release is permissionless once the dispute
   window closes.
+- **My grants** — a sponsor's own portfolio: total committed, what is still
+  in escrow, open claims, and a live countdown on every attested term, since
+  objecting before that expires is the sponsor's only check on a false
+  attestation.
+- **Institution dashboard** — role-aware view for a registered school: what it
+  is owed, which terms it can attest right now, and one-click attestation.
+  Tells an unregistered wallet plainly that it is not in the registry.
 - **Institutions** — registered schools with verification status.
 - **Fund a grant** — the sponsor flow: pick a verified institution, name the
   student, set per-term amount and term count; the full commitment transfers

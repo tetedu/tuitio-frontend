@@ -37,3 +37,21 @@ export const TERM_STATUS_STYLE: Record<string, string> = {
   released: "bg-emerald-500/15 text-emerald-300",
   refunded: "bg-sky-500/15 text-sky-300",
 };
+
+/// Renders the time left until a unix timestamp as a coarse countdown.
+/// Returns null once the moment has passed, so callers can switch UI.
+export function countdownTo(unixSeconds: number, nowMs: number): string | null {
+  if (!unixSeconds) return null;
+  const remaining = unixSeconds * 1000 - nowMs;
+  if (remaining <= 0) return null;
+
+  const minutes = Math.floor(remaining / 60_000);
+  const days = Math.floor(minutes / (60 * 24));
+  const hours = Math.floor((minutes % (60 * 24)) / 60);
+  const mins = minutes % 60;
+
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${mins}m`;
+  if (mins > 0) return `${mins}m`;
+  return "under a minute";
+}
