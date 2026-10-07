@@ -6,6 +6,7 @@
 // dispute resolution is admin-only.
 
 import { useState } from "react";
+import Link from "next/link";
 import { useWallet, freighterSigner } from "./WalletProvider";
 import { TxResult } from "./TxResult";
 import { DisputeWindow } from "./DisputeWindow";
@@ -56,7 +57,6 @@ export function GrantActions({ grant, terms }: { grant: Grant; terms: Term[] }) 
 
   const isSponsor = address === grant.sponsor;
   const isInstitution = address === grant.institution;
-  const isAdmin = false; // admin actions run via the CLI in this MVP
 
   const canAttest = isInstitution && currentTerm.status === "pending";
   const canDispute = isSponsor && currentTerm.status === "attested";
@@ -113,7 +113,7 @@ export function GrantActions({ grant, terms }: { grant: Grant; terms: Term[] }) 
             {pending === "cancel" ? "Signing…" : "Cancel and refund"}
           </button>
         )}
-        {isAdmin && currentTerm.status === "disputed" && <span className="text-xs text-neutral-500">Dispute resolution is admin-only.</span>}
+
       </div>
 
       {!address && (
@@ -123,7 +123,12 @@ export function GrantActions({ grant, terms }: { grant: Grant; terms: Term[] }) 
       )}
       {currentTerm.status === "disputed" && (
         <p className="text-xs text-neutral-500">
-          This term is disputed. Resolution is performed by the protocol admin.
+          This term is disputed and its funds are frozen until the escrow admin
+          decides. If that is you, resolve it on the{" "}
+          <Link href="/admin" className="text-sky-400 underline decoration-dotted">
+            dispute resolution
+          </Link>{" "}
+          page.
         </p>
       )}
       {txHash && (

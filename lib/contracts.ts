@@ -24,6 +24,15 @@ export interface TuitioEscrow {
     release: boolean;
   }) => Promise<contract.AssembledTransaction<void>>;
   cancel_grant: (args: { grant_id: number }) => Promise<contract.AssembledTransaction<void>>;
+  /// Read-only: the escrow's configuration, including the admin who resolves
+  /// disputes. Simulated rather than submitted, so it costs nothing.
+  get_config: () => Promise<
+    contract.AssembledTransaction<{
+      admin: string;
+      registry: string;
+      dispute_window: bigint;
+    }>
+  >;
 }
 
 export interface TuitioRegistry {
