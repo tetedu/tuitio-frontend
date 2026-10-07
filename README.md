@@ -27,6 +27,11 @@ through the Soroban contracts via a Freighter wallet.
 - **Institution dashboard** — role-aware view for a registered school: what it
   is owed, which terms it can attest right now, and one-click attestation.
   Tells an unregistered wallet plainly that it is not in the registry.
+- **Dispute resolution** — for whoever the escrow contract names as admin:
+  every disputed term with the context to judge it, and a confirmation step
+  before paying the institution or refunding the sponsor. The admin address is
+  read from the contract, so the UI cannot disagree with what the contract
+  will accept.
 - **Institutions** — registered schools with verification status.
 - **Fund a grant** — the sponsor flow: pick a verified institution, name the
   student, set per-term amount and term count; the full commitment transfers

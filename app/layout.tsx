@@ -40,6 +40,7 @@ export default function RootLayout({
                   <Link href="/sponsor" className="hover:text-neutral-100">Fund a grant</Link>
                   <Link href="/portfolio" className="hover:text-neutral-100">My grants</Link>
                   <Link href="/institution" className="hover:text-neutral-100">Institution</Link>
+                  <Link href="/admin" className="hover:text-neutral-100">Disputes</Link>
                 </div>
               </div>
               <WalletButton />
