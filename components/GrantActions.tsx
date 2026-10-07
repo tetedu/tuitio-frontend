@@ -7,9 +7,11 @@
 
 import { useState } from "react";
 import { useWallet, freighterSigner } from "./WalletProvider";
+import { TxResult } from "./TxResult";
+import { DisputeWindow } from "./DisputeWindow";
 import { escrowClient } from "@/lib/contracts";
 import { env } from "@/lib/env";
-import type { Grant, Term } from "@/lib/api";
+import { api, type Grant, type Term } from "@/lib/api";
 
 type Pending = string | null;
 
@@ -70,6 +72,10 @@ export function GrantActions({ grant, terms }: { grant: Grant; terms: Term[] }) 
 
   return (
     <div className="space-y-3">
+      {currentTerm.status === "attested" && (
+        <DisputeWindow releaseAfter={currentTerm.release_after} />
+      )}
+
       <div className="flex flex-wrap gap-2">
         {canAttest && (
           <button
@@ -121,9 +127,15 @@ export function GrantActions({ grant, terms }: { grant: Grant; terms: Term[] }) 
         </p>
       )}
       {txHash && (
-        <p className="text-xs text-emerald-400">
-          Sent. The indexer picks it up within a few seconds — refresh to see the new state.
-        </p>
+        <TxResult
+          hash={txHash}
+          confirm={async () => {
+            const fresh = await api.terms(grant.grant_id);
+            const before = terms[currentTerm.term_index];
+            const after = fresh[currentTerm.term_index];
+            return Boolean(after && before && after.status !== before.status);
+          }}
+        />
       )}
       {error && <p className="text-xs text-red-400">{error}</p>}
     </div>

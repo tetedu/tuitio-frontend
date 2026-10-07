@@ -16,4 +16,14 @@ export const env = {
     "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
   tokenSymbol: process.env.NEXT_PUBLIC_TOKEN_SYMBOL ?? "XLM",
   tokenDecimals: Number(process.env.NEXT_PUBLIC_TOKEN_DECIMALS ?? 7),
+  // Base URL for linking a transaction hash to a block explorer. Configurable
+  // because explorers change their routes and a dead link is worse than none.
+  explorerTxBase:
+    process.env.NEXT_PUBLIC_EXPLORER_TX_BASE ??
+    "https://stellar.expert/explorer/testnet/tx",
 } as const;
+
+/// Block-explorer URL for a transaction hash.
+export function explorerTxUrl(hash: string): string {
+  return `${env.explorerTxBase}/${hash}`;
+}

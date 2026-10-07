@@ -38,6 +38,8 @@ export default function RootLayout({
                   <Link href="/" className="hover:text-neutral-100">Dashboard</Link>
                   <Link href="/institutions" className="hover:text-neutral-100">Institutions</Link>
                   <Link href="/sponsor" className="hover:text-neutral-100">Fund a grant</Link>
+                  <Link href="/portfolio" className="hover:text-neutral-100">My grants</Link>
+                  <Link href="/institution" className="hover:text-neutral-100">Institution</Link>
                 </div>
               </div>
               <WalletButton />
