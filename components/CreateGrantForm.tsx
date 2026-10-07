@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from "react";
 import { useWallet, freighterSigner } from "./WalletProvider";
+import { TxResult } from "./TxResult";
 import { escrowClient } from "@/lib/contracts";
 import { api, type Institution } from "@/lib/api";
 import { env } from "@/lib/env";
@@ -20,6 +21,7 @@ export function CreateGrantForm() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState<string | null>(null);
 
   useEffect(() => {
     api
@@ -53,7 +55,11 @@ export function CreateGrantForm() {
       });
       const sent = await tx.signAndSend();
       const hash = sent.sendTransactionResponse?.hash;
-      setSuccess(`Grant submitted${hash ? ` (${hash.slice(0, 12)}…)` : ""}.`);
+      if (hash) {
+        setTxHash(hash);
+      } else {
+        setSuccess("Grant submitted.");
+      }
     } catch (e) {
       setError(
         e instanceof Error ? e.message : "Transaction failed. Do you have enough of the tuition token?",
@@ -145,6 +151,15 @@ export function CreateGrantForm() {
       >
         {pending ? "Confirm in Freighter…" : "Fund grant"}
       </button>
+      {txHash && (
+        <TxResult
+          hash={txHash}
+          confirm={async () => {
+            const grants = await api.grants({ sponsor: address ?? undefined });
+            return grants.length > 0;
+          }}
+        />
+      )}
       {success && <p className="text-sm text-emerald-400">{success}</p>}
       {error && <p className="text-sm text-red-400">{error}</p>}
     </form>
