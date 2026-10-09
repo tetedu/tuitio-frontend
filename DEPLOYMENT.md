@@ -19,8 +19,10 @@ browser ──▶ frontend (Next.js) ──▶ backend (Go indexer + REST API) �
    - a web service from the Dockerfile (health check `/healthz`), and
    - a co-located free Postgres (`tuitio-db`), wired with the internal
      connection string.
-2. When prompted for `START_LEDGER`, set `4570990` — the ledger just before
-   the first demo event, so the indexer backfills the existing testnet state.
+2. When prompted for `START_LEDGER`, set `5104000` — a ledger just before
+   the v0.2.0 contracts were deployed, so the indexer backfills their full
+   history from events. (RPC keeps about 7 days of events; past that, leave it
+   at 0 and run `go run ./cmd/reconcile` once to rebuild from contract state.)
    (0 would start at the chain tip and index only new events.)
 3. Deploy. First build takes a few minutes; `https://<service>.onrender.com`
    is the API base URL.
