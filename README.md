@@ -8,6 +8,8 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](package.json)
 
+**Live demo:** <https://tuitio-frontend.vercel.app> (Stellar testnet, Freighter wallet)
+
 **Next.js web app for the Tuitio protocol.** Sponsors fund tuition grants,
 institutions attest completed terms, and every state change lands on-chain
 through the Soroban contracts via a Freighter wallet.
