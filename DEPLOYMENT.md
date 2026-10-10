@@ -1,8 +1,8 @@
 # Deploying Tuitio
 
-Two supported topologies. The submission-grade one is the PaaS path; the
-tunnel path runs everything on a single machine and is what the live demo
-currently uses.
+Two supported topologies. The live demo runs on the PaaS path (Vercel + Render);
+the tunnel path runs everything on a single machine for local or temporary
+hosting.
 
 ```
 browser ──▶ frontend (Next.js) ──▶ backend (Go indexer + REST API) ──▶ Postgres
@@ -10,7 +10,7 @@ browser ──▶ frontend (Next.js) ──▶ backend (Go indexer + REST API) �
                 └── Soroban RPC ◀────────┘   (contract writes go browser → RPC directly)
 ```
 
-## Path A: Vercel + Render (durable)
+## Path A: Vercel + Render (durable, current live demo)
 
 ### Backend on Render (~7 min)
 
@@ -43,7 +43,7 @@ the API same-origin through its `/api/[...path]` runtime proxy — but set
 `ALLOWED_ORIGINS` to your Vercel domain(s) if other browser clients will use
 the API directly.
 
-## Path B: single machine + tunnels (current live demo)
+## Path B: single machine + tunnels
 
 Everything runs locally, bound to 127.0.0.1, exposed through outbound SSH
 tunnels (no inbound firewall ports needed). See `deploy/` in the working

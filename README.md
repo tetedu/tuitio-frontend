@@ -60,8 +60,8 @@ SAC on testnet).
 
 ## Deployment
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for the Vercel + Render path and the
-single-machine tunnel setup the live demo runs on.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the Vercel + Render path the live
+demo runs on, and a single-machine tunnel alternative.
 
 ## Configuration
 
