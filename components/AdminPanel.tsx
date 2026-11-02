@@ -22,7 +22,7 @@ interface Disputed {
 }
 
 export function AdminPanel() {
-  const { address, connect, connecting } = useWallet();
+  const { address, connect, connecting, networkMismatch } = useWallet();
   const [admin, setAdmin] = useState<string | null>(null);
   const [adminError, setAdminError] = useState<string | null>(null);
   const [disputed, setDisputed] = useState<Disputed[] | null>(null);
@@ -206,14 +206,14 @@ export function AdminPanel() {
                         confirming === releaseKey,
                       )
                     }
-                    disabled={busy}
+                    disabled={busy || networkMismatch}
                     className="rounded-md bg-white px-3 py-1.5 font-medium text-black disabled:opacity-40"
                   >
                     {busy ? "Confirm in Freighter…" : "Yes, do it"}
                   </button>
                   <button
                     onClick={() => setConfirming(null)}
-                    disabled={busy}
+                    disabled={busy || networkMismatch}
                     className="rounded-md border border-neutral-700 px-3 py-1.5 text-neutral-300 disabled:opacity-40"
                   >
                     Cancel
@@ -224,14 +224,14 @@ export function AdminPanel() {
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
                   onClick={() => setConfirming(releaseKey)}
-                  disabled={busy}
+                  disabled={busy || networkMismatch}
                   className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-500 disabled:opacity-40"
                 >
                   Pay the institution
                 </button>
                 <button
                   onClick={() => setConfirming(refundKey)}
-                  disabled={busy}
+                  disabled={busy || networkMismatch}
                   className="rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-sky-500 disabled:opacity-40"
                 >
                   Refund the sponsor

@@ -17,7 +17,7 @@ import { api, type Grant, type Term } from "@/lib/api";
 type Pending = string | null;
 
 export function GrantActions({ grant, terms }: { grant: Grant; terms: Term[] }) {
-  const { address } = useWallet();
+  const { address, networkMismatch } = useWallet();
   const [pending, setPending] = useState<Pending>(null);
   const [error, setError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -80,7 +80,7 @@ export function GrantActions({ grant, terms }: { grant: Grant; terms: Term[] }) 
         {canAttest && (
           <button
             className={`${button} bg-emerald-600 text-white hover:bg-emerald-500`}
-            disabled={pending !== null}
+            disabled={pending !== null || networkMismatch}
             onClick={() => invoke("attest", "attest_term", { grant_id: grant.grant_id, term_index: currentTerm.term_index })}
           >
             {pending === "attest" ? "Signing…" : `Attest term ${currentTerm.term_index}`}
@@ -89,7 +89,7 @@ export function GrantActions({ grant, terms }: { grant: Grant; terms: Term[] }) 
         {canDispute && (
           <button
             className={`${button} bg-red-600 text-white hover:bg-red-500`}
-            disabled={pending !== null}
+            disabled={pending !== null || networkMismatch}
             onClick={() => invoke("dispute", "dispute_term", { grant_id: grant.grant_id, term_index: currentTerm.term_index })}
           >
             {pending === "dispute" ? "Signing…" : "Dispute this term"}
@@ -98,7 +98,7 @@ export function GrantActions({ grant, terms }: { grant: Grant; terms: Term[] }) 
         {canRelease && (
           <button
             className={`${button} bg-sky-600 text-white hover:bg-sky-500`}
-            disabled={pending !== null}
+            disabled={pending !== null || networkMismatch}
             onClick={() => invoke("release", "release_term", { grant_id: grant.grant_id, term_index: currentTerm.term_index })}
           >
             {pending === "release" ? "Sending…" : `Release term ${currentTerm.term_index}`}
@@ -107,7 +107,7 @@ export function GrantActions({ grant, terms }: { grant: Grant; terms: Term[] }) 
         {canCancel && (
           <button
             className={`${button} border border-neutral-700 text-neutral-300 hover:bg-neutral-800`}
-            disabled={pending !== null}
+            disabled={pending !== null || networkMismatch}
             onClick={() => invoke("cancel", "cancel_grant", { grant_id: grant.grant_id })}
           >
             {pending === "cancel" ? "Signing…" : "Cancel and refund"}
