@@ -12,7 +12,7 @@ import { env } from "@/lib/env";
 import { formatAmount } from "@/lib/format";
 
 export function CreateGrantForm() {
-  const { address, connecting } = useWallet();
+  const { address, connecting, networkMismatch } = useWallet();
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [institution, setInstitution] = useState("");
   const [beneficiary, setBeneficiary] = useState("");
@@ -146,7 +146,7 @@ export function CreateGrantForm() {
       </div>
       <button
         type="submit"
-        disabled={pending || connecting || institutions.length === 0}
+        disabled={pending || connecting || networkMismatch || institutions.length === 0}
         className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:opacity-50"
       >
         {pending ? "Confirm in Freighter…" : "Fund grant"}

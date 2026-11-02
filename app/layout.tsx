@@ -4,6 +4,7 @@ import Link from "next/link";
 import "./globals.css";
 import { WalletProvider } from "@/components/WalletProvider";
 import { WalletButton } from "@/components/WalletButton";
+import { NetworkBanner } from "@/components/NetworkBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,6 +47,7 @@ export default function RootLayout({
               <WalletButton />
             </nav>
           </header>
+          <NetworkBanner />
           <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
           <footer className="border-t border-neutral-800 py-6 text-center text-xs text-neutral-500">
             Tuitio · milestone-gated tuition escrow · Stellar testnet

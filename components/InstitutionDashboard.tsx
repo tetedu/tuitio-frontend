@@ -13,7 +13,7 @@ import { env } from "@/lib/env";
 import { formatAmount } from "@/lib/format";
 
 export function InstitutionDashboard() {
-  const { address, connect, connecting } = useWallet();
+  const { address, connect, connecting, networkMismatch } = useWallet();
   const { rows, error, reload } = useRoleGrants("institution", address);
   // null while unknown, false once we know the wallet is not registered.
   const [me, setMe] = useState<Institution | null>(null);
@@ -164,7 +164,7 @@ export function InstitutionDashboard() {
                 </div>
                 <button
                   onClick={() => attest(r.grant.grant_id, term.term_index)}
-                  disabled={pending !== null || me?.status !== "verified"}
+                  disabled={pending !== null || networkMismatch || me?.status !== "verified"}
                   className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-500 disabled:opacity-40"
                 >
                   {pending === key ? "Confirm in Freighter…" : "Attest term"}
