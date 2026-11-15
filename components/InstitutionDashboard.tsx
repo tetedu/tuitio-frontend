@@ -7,14 +7,22 @@ import { useEffect, useState } from "react";
 import { useWallet, freighterSigner } from "./WalletProvider";
 import { GrantCard, useRoleGrants } from "./RoleGrants";
 import { TxResult } from "./TxResult";
+import { useTokenMetadataMap } from "./useTokenMetadata";
 import { escrowClient } from "@/lib/contracts";
 import { api, type Institution } from "@/lib/api";
 import { env } from "@/lib/env";
-import { formatAmount } from "@/lib/format";
+import {
+  fallbackTokenMetadata,
+  formatTokenAmount,
+  formatTokenTotals,
+} from "@/lib/token";
 
 export function InstitutionDashboard() {
   const { address, connect, connecting } = useWallet();
   const { rows, error, reload } = useRoleGrants("institution", address);
+  const metadataByToken = useTokenMetadataMap(
+    (rows ?? []).map((r) => r.grant.token),
+  );
   // null while unknown, false once we know the wallet is not registered.
   const [me, setMe] = useState<Institution | null>(null);
   const [registered, setRegistered] = useState<boolean | null>(null);
@@ -96,7 +104,11 @@ export function InstitutionDashboard() {
   const attestable = rows.filter(
     (r) => r.grant.status === "active" && r.terms[r.grant.next_term]?.status === "pending",
   );
-  const owed = rows.reduce((sum, r) => sum + r.grant.locked_amount, 0);
+  const owedItems = rows.map((r) => ({
+    token: r.grant.token,
+    amount: r.grant.locked_amount,
+  }));
+  const fallbackToken = fallbackTokenMetadata();
 
   return (
     <div className="space-y-6">
@@ -133,7 +145,7 @@ export function InstitutionDashboard() {
         <Stat label="Terms you can attest" value={String(attestable.length)} />
         <Stat
           label="Still in escrow for you"
-          value={formatAmount(owed, env.tokenDecimals, env.tokenSymbol)}
+          value={formatTokenTotals(owedItems, metadataByToken, fallbackToken)}
         />
       </div>
 
@@ -143,6 +155,7 @@ export function InstitutionDashboard() {
           {attestable.map((r) => {
             const term = r.terms[r.grant.next_term];
             const key = `${r.grant.grant_id}:${term.term_index}`;
+            const grantToken = metadataByToken.get(r.grant.token) ?? fallbackToken;
             return (
               <div
                 key={key}
@@ -154,11 +167,7 @@ export function InstitutionDashboard() {
                   </div>
                   <div className="text-xs text-neutral-400">
                     Releases{" "}
-                    {formatAmount(
-                      r.grant.term_amount,
-                      env.tokenDecimals,
-                      env.tokenSymbol,
-                    )}{" "}
+                    {formatTokenAmount(r.grant.term_amount, grantToken)}{" "}
                     once the sponsor&apos;s window closes
                   </div>
                 </div>

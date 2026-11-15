@@ -11,10 +11,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useWallet, freighterSigner } from "./WalletProvider";
 import { TxResult } from "./TxResult";
+import { useTokenMetadataMap } from "./useTokenMetadata";
 import { escrowClient } from "@/lib/contracts";
 import { api, type Grant, type Term } from "@/lib/api";
 import { env } from "@/lib/env";
-import { formatAmount, formatTimestamp, shortAddress } from "@/lib/format";
+import { formatTimestamp, shortAddress } from "@/lib/format";
+import { fallbackTokenMetadata, formatTokenAmount } from "@/lib/token";
 
 interface Disputed {
   grant: Grant;
@@ -30,6 +32,10 @@ export function AdminPanel() {
   const [confirming, setConfirming] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const metadataByToken = useTokenMetadataMap(
+    (disputed ?? []).map((d) => d.grant.token),
+  );
+  const fallbackToken = fallbackTokenMetadata();
 
   // The contract is the authority on who may resolve a dispute.
   useEffect(() => {
@@ -155,6 +161,8 @@ export function AdminPanel() {
         const releaseKey = `${grant.grant_id}:${term.term_index}:true`;
         const refundKey = `${grant.grant_id}:${term.term_index}:false`;
         const busy = pending !== null;
+        const grantToken = metadataByToken.get(grant.token) ?? fallbackToken;
+        const formattedAmount = formatTokenAmount(grant.term_amount, grantToken);
         return (
           <div
             key={`${grant.grant_id}-${term.term_index}`}
@@ -165,7 +173,7 @@ export function AdminPanel() {
                 Grant #{grant.grant_id}, term {term.term_index}
               </span>
               <span className="font-mono text-sm">
-                {formatAmount(grant.term_amount, env.tokenDecimals, env.tokenSymbol)}
+                {formattedAmount}
               </span>
             </div>
 
@@ -194,8 +202,8 @@ export function AdminPanel() {
               <div className="mt-4 rounded-md bg-neutral-900 p-3 text-xs">
                 <p className="text-neutral-200">
                   {confirming === releaseKey
-                    ? `Pay ${formatAmount(grant.term_amount, env.tokenDecimals, env.tokenSymbol)} to the institution? This is final.`
-                    : `Refund ${formatAmount(grant.term_amount, env.tokenDecimals, env.tokenSymbol)} to the sponsor? This is final.`}
+                    ? `Pay ${formattedAmount} to the institution? This is final.`
+                    : `Refund ${formattedAmount} to the sponsor? This is final.`}
                 </p>
                 <div className="mt-3 flex gap-2">
                   <button

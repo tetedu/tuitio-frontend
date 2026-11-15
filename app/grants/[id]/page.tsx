@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
-import { env } from "@/lib/env";
-import { formatAmount, formatTimestamp, GRANT_STATUS_LABEL, shortAddress } from "@/lib/format";
+import { formatTimestamp, GRANT_STATUS_LABEL, shortAddress } from "@/lib/format";
+import { formatTokenAmount, getTokenMetadata } from "@/lib/token";
 import { TermsTimeline } from "@/components/TermsTimeline";
 import { GrantActions } from "@/components/GrantActions";
 
@@ -18,8 +18,11 @@ export default async function GrantDetail({
 
   const grant = await api.grant(grantId).catch(() => null);
   if (!grant) notFound();
-  const terms = await api.terms(grantId).catch(() => []);
-  const institution = await api.institution(grant.institution).catch(() => null);
+  const [terms, institution, token] = await Promise.all([
+    api.terms(grantId).catch(() => []),
+    api.institution(grant.institution).catch(() => null),
+    getTokenMetadata(grant.token),
+  ]);
 
   const total = grant.term_amount * grant.terms_total;
   const released = grant.term_amount * grant.next_term;
@@ -36,19 +39,19 @@ export default async function GrantDetail({
       <section className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-4">
           <div className="font-mono text-lg">
-            {formatAmount(total, env.tokenDecimals, env.tokenSymbol)}
+            {formatTokenAmount(total, token)}
           </div>
           <div className="mt-1 text-xs text-neutral-400">Total committed</div>
         </div>
         <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-4">
           <div className="font-mono text-lg">
-            {formatAmount(released, env.tokenDecimals, env.tokenSymbol)}
+            {formatTokenAmount(released, token)}
           </div>
           <div className="mt-1 text-xs text-neutral-400">Settled so far</div>
         </div>
         <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-4">
           <div className="font-mono text-lg">
-            {formatAmount(grant.locked_amount, env.tokenDecimals, env.tokenSymbol)}
+            {formatTokenAmount(grant.locked_amount, token)}
           </div>
           <div className="mt-1 text-xs text-neutral-400">Still in escrow</div>
         </div>
@@ -66,6 +69,12 @@ export default async function GrantDetail({
         <div className="flex justify-between">
           <span className="text-neutral-400">Institution</span>
           <span>{institution ? `${institution.name} (${institution.country})` : shortAddress(grant.institution, 8)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-neutral-400">Token</span>
+          <span className="font-mono" title={grant.token}>
+            {token.name} ({token.symbol})
+          </span>
         </div>
         <div className="flex justify-between">
           <span className="text-neutral-400">Created</span>

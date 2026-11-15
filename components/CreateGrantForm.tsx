@@ -6,13 +6,15 @@
 import { useEffect, useState } from "react";
 import { useWallet, freighterSigner } from "./WalletProvider";
 import { TxResult } from "./TxResult";
+import { useTokenMetadata } from "./useTokenMetadata";
 import { escrowClient } from "@/lib/contracts";
 import { api, type Institution } from "@/lib/api";
 import { env } from "@/lib/env";
-import { formatAmount } from "@/lib/format";
+import { formatTokenAmount, tokenInputStep, toSmallestUnit } from "@/lib/token";
 
 export function CreateGrantForm() {
   const { address, connecting } = useWallet();
+  const token = useTokenMetadata(env.tokenContract);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [institution, setInstitution] = useState("");
   const [beneficiary, setBeneficiary] = useState("");
@@ -34,8 +36,9 @@ export function CreateGrantForm() {
       .catch(() => setError("Could not load institutions from the API"));
   }, []);
 
-  const total =
-    (Number(termAmount) || 0) * (Number(termsTotal) || 0);
+  const perTermSmallest = toSmallestUnit(termAmount || "0", token);
+  const totalSmallest =
+    Number(perTermSmallest) * Math.max(0, Number(termsTotal) || 0);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,13 +47,16 @@ export function CreateGrantForm() {
     setError(null);
     setSuccess(null);
     try {
-      const client = await escrowClient(address, freighterSigner(env.networkPassphrase, address));
+      const client = await escrowClient(
+        address,
+        freighterSigner(env.networkPassphrase, address),
+      );
       const tx = await client.create_grant({
         sponsor: address,
         beneficiary,
         institution,
         token_id: env.tokenContract,
-        term_amount: BigInt(Math.round(Number(termAmount) * 10 ** env.tokenDecimals)),
+        term_amount: toSmallestUnit(termAmount, token),
         terms_total: Number(termsTotal),
       });
       const sent = await tx.signAndSend();
@@ -62,7 +68,9 @@ export function CreateGrantForm() {
       }
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : "Transaction failed. Do you have enough of the tuition token?",
+        e instanceof Error
+          ? e.message
+          : "Transaction failed. Do you have enough of the tuition token?",
       );
     } finally {
       setPending(false);
@@ -73,7 +81,7 @@ export function CreateGrantForm() {
     return (
       <p className="text-sm text-neutral-400">
         Connect a Freighter wallet to fund a grant. The wallet must hold the
-        tuition token ({env.tokenSymbol} via the asset contract).
+        tuition token ({token.name} — {token.symbol}).
       </p>
     );
   }
@@ -110,11 +118,13 @@ export function CreateGrantForm() {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="mb-1 block text-xs text-neutral-400">Amount per term ({env.tokenSymbol})</label>
+          <label className="mb-1 block text-xs text-neutral-400">
+            Amount per term ({token.symbol})
+          </label>
           <input
             type="number"
             min="0"
-            step="0.0000001"
+            step={tokenInputStep(token)}
             value={termAmount}
             onChange={(e) => setTermAmount(e.target.value)}
             className={input}
@@ -137,11 +147,11 @@ export function CreateGrantForm() {
       <div className="rounded-md bg-neutral-900/70 p-3 text-sm">
         Total commitment:{" "}
         <span className="font-mono">
-          {total.toLocaleString(undefined, { maximumFractionDigits: 7 })} {env.tokenSymbol}
+          {formatTokenAmount(totalSmallest, token)}
         </span>{" "}
         transfers into escrow now.
         <div className="text-[11px] text-neutral-500">
-          Per term: {formatAmount(Math.round(Number(termAmount || 0) * 10 ** env.tokenDecimals), env.tokenDecimals, env.tokenSymbol)}
+          Per term: {formatTokenAmount(Number(perTermSmallest), token)}
         </div>
       </div>
       <button
