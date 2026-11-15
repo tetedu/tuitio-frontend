@@ -1,6 +1,62 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { env, explorerTxUrl } from "./env";
 
+const ALL_STRING_KEYS: Array<{
+  envVar: string;
+  prop: keyof typeof env;
+  defaultValue: string;
+  sampleValue: string;
+}> = [
+  {
+    envVar: "NEXT_PUBLIC_API_URL",
+    prop: "apiUrl",
+    defaultValue: "http://localhost:8080",
+    sampleValue: "https://api.tuitio.example",
+  },
+  {
+    envVar: "NEXT_PUBLIC_RPC_URL",
+    prop: "rpcUrl",
+    defaultValue: "https://soroban-testnet.stellar.org",
+    sampleValue: "https://rpc.tuitio.example",
+  },
+  {
+    envVar: "NEXT_PUBLIC_NETWORK_PASSPHRASE",
+    prop: "networkPassphrase",
+    defaultValue: "Test SDF Network ; September 2015",
+    sampleValue: "Public Global Stellar Network ; September 2015",
+  },
+  {
+    envVar: "NEXT_PUBLIC_REGISTRY_CONTRACT",
+    prop: "registryContract",
+    defaultValue: "CCTZVSPMIYEA4X2Z6UP5IPIO2HBIZWHLV37OUDBV32YUCP64JNIPBCPO",
+    sampleValue: "CREGISTRYOVERRIDE",
+  },
+  {
+    envVar: "NEXT_PUBLIC_ESCROW_CONTRACT",
+    prop: "escrowContract",
+    defaultValue: "CDPGTHO2O7LTURTJF7L7ZZZTZCXPNABAPGVRDMBYIJ737R6O3DOPWJ34",
+    sampleValue: "CESCROWOVERRIDE",
+  },
+  {
+    envVar: "NEXT_PUBLIC_TOKEN_CONTRACT",
+    prop: "tokenContract",
+    defaultValue: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+    sampleValue: "CTOKENOVERRIDE",
+  },
+  {
+    envVar: "NEXT_PUBLIC_TOKEN_SYMBOL",
+    prop: "tokenSymbol",
+    defaultValue: "XLM",
+    sampleValue: "USDC",
+  },
+  {
+    envVar: "NEXT_PUBLIC_EXPLORER_TX_BASE",
+    prop: "explorerTxBase",
+    defaultValue: "https://stellar.expert/explorer/testnet/tx",
+    sampleValue: "https://stellar.expert/explorer/public/tx",
+  },
+];
+
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.resetModules();
@@ -19,16 +75,35 @@ describe("explorerTxUrl", () => {
 });
 
 describe("defaults", () => {
-  it("defaults to the deployed v0.2.0 testnet contracts", () => {
-    // These are the addresses in SUBMISSION.md. If a redeploy changes them,
-    // this test is the reminder that the frontend default moved too.
-    expect(env.registryContract).toBe("CCTZVSPMIYEA4X2Z6UP5IPIO2HBIZWHLV37OUDBV32YUCP64JNIPBCPO");
-    expect(env.escrowContract).toBe("CDPGTHO2O7LTURTJF7L7ZZZTZCXPNABAPGVRDMBYIJ737R6O3DOPWJ34");
+  it("defaults to the deployed v0.2.0 testnet contracts when variables are unset", async () => {
+    for (const { envVar } of ALL_STRING_KEYS) {
+      vi.stubEnv(envVar, undefined);
+    }
+    vi.stubEnv("NEXT_PUBLIC_TOKEN_DECIMALS", undefined);
+    vi.resetModules();
+
+    const fresh = await import("./env");
+    for (const { prop, defaultValue } of ALL_STRING_KEYS) {
+      expect(fresh.env[prop]).toBe(defaultValue);
+    }
+    expect(fresh.env.tokenDecimals).toBe(7);
+  });
+
+  it("treats empty-string env variables as unset across every setting", async () => {
+    for (const { envVar } of ALL_STRING_KEYS) {
+      vi.stubEnv(envVar, "");
+    }
+    vi.stubEnv("NEXT_PUBLIC_TOKEN_DECIMALS", "");
+    vi.resetModules();
+
+    const fresh = await import("./env");
+    for (const { prop, defaultValue } of ALL_STRING_KEYS) {
+      expect(fresh.env[prop]).toBe(defaultValue);
+    }
+    expect(fresh.env.tokenDecimals).toBe(7);
   });
 
   it("defaults to the testnet network passphrase, not public", () => {
-    // Signing against the wrong passphrase produces a transaction the network
-    // rejects, with an error that does not mention the passphrase.
     expect(env.networkPassphrase).toBe("Test SDF Network ; September 2015");
   });
 
@@ -39,30 +114,39 @@ describe("defaults", () => {
 });
 
 describe("overrides", () => {
-  it("reads configuration from the environment at module load", async () => {
-    vi.stubEnv("NEXT_PUBLIC_ESCROW_CONTRACT", "COVERRIDE");
-    vi.stubEnv("NEXT_PUBLIC_TOKEN_SYMBOL", "USDC");
+  it("reads configured non-empty values for every setting at module load", async () => {
+    for (const { envVar, sampleValue } of ALL_STRING_KEYS) {
+      vi.stubEnv(envVar, sampleValue);
+    }
     vi.stubEnv("NEXT_PUBLIC_TOKEN_DECIMALS", "6");
     vi.resetModules();
 
     const fresh = await import("./env");
-
-    expect(fresh.env.escrowContract).toBe("COVERRIDE");
-    expect(fresh.env.tokenSymbol).toBe("USDC");
+    for (const { prop, sampleValue } of ALL_STRING_KEYS) {
+      expect(fresh.env[prop]).toBe(sampleValue);
+    }
     expect(fresh.env.tokenDecimals).toBe(6);
   });
 
-  // Known sharp edge, pinned deliberately. tokenDecimals goes through
-  // Number() with no validation, so a typo produces NaN rather than a
-  // startup failure. Every amount then renders as "NaN XLM", because
-  // 10 ** NaN is NaN. Worth validating at load, but that is a behaviour
-  // change rather than a test.
-  it("yields NaN for a non-numeric decimals value instead of rejecting it", async () => {
-    vi.stubEnv("NEXT_PUBLIC_TOKEN_DECIMALS", "seven");
+  it("accepts 0 decimals as a valid integer rather than falling back to 7", async () => {
+    vi.stubEnv("NEXT_PUBLIC_TOKEN_DECIMALS", "0");
     vi.resetModules();
 
     const fresh = await import("./env");
+    expect(fresh.env.tokenDecimals).toBe(0);
+  });
 
-    expect(Number.isNaN(fresh.env.tokenDecimals)).toBe(true);
+  it("rejects non-numeric or negative tokenDecimals values at module load", async () => {
+    vi.stubEnv("NEXT_PUBLIC_TOKEN_DECIMALS", "seven");
+    vi.resetModules();
+    await expect(import("./env")).rejects.toThrow(/Invalid NEXT_PUBLIC_TOKEN_DECIMALS/);
+
+    vi.stubEnv("NEXT_PUBLIC_TOKEN_DECIMALS", "-2");
+    vi.resetModules();
+    await expect(import("./env")).rejects.toThrow(/Invalid NEXT_PUBLIC_TOKEN_DECIMALS/);
+
+    vi.stubEnv("NEXT_PUBLIC_TOKEN_DECIMALS", "3.5");
+    vi.resetModules();
+    await expect(import("./env")).rejects.toThrow(/Invalid NEXT_PUBLIC_TOKEN_DECIMALS/);
   });
 });
