@@ -1,7 +1,9 @@
-import { api } from "@/lib/api";
+import { api, type Term } from "@/lib/api";
+import { dueGrantIds } from "@/lib/sweep";
 import { StatCard } from "@/components/StatCard";
 import { GrantRow } from "@/components/GrantRow";
 import { ActivityFeed } from "@/components/ActivityFeed";
+import { SweepDueButton } from "@/components/SweepDueButton";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +14,19 @@ export default async function Dashboard() {
     api.grants().catch(() => []),
     api.activity(15).catch(() => []),
   ]);
+
+  const activeEntries = await Promise.all(
+    grants
+      .filter((g) => g.status === "active")
+      .map(async (grant) => ({
+        grant,
+        terms: await api.terms(grant.grant_id).catch(() => [] as Term[]),
+      })),
+  );
+  // Checking the wall clock on a dynamic server render is intentional so the
+  // initial due count reflects dispute windows that have already closed.
+  // eslint-disable-next-line react-hooks/purity
+  const dueIds = dueGrantIds(activeEntries, Date.now() / 1000);
 
   return (
     <div className="space-y-10">
@@ -34,7 +49,10 @@ export default async function Dashboard() {
       )}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-medium">Grants</h2>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h2 className="text-lg font-medium">Grants</h2>
+          <SweepDueButton initialDueGrantIds={dueIds} />
+        </div>
         {grants.length === 0 ? (
           <p className="text-sm text-neutral-400">No grants indexed yet.</p>
         ) : (
