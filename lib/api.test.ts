@@ -99,22 +99,20 @@ describe("base URL selection", () => {
     expect(requestedPath(spy)).toBe("http://127.0.0.1:8080/api/stats");
   });
 
-  // Known defect, pinned deliberately. baseUrl() chains with ??, which only
-  // falls through on null and undefined — an empty string is a value. A
-  // deploy platform that declares API_URL without giving it a value therefore
-  // produces "", and the server-side branch builds a relative URL. There is
-  // no origin to resolve it against outside a browser, so every server
-  // component's fetch fails at once.
-  //
-  // Changing ?? to || in baseUrl() fixes it. Tracked separately rather than
-  // changed here, since this PR is meant to add tests, not behaviour. Update
-  // this test when that lands; it should start failing.
-  it("treats an empty API_URL as a value, yielding an unusable relative URL", async () => {
+  it("treats an empty API_URL as unset and falls back to NEXT_PUBLIC_API_URL", async () => {
     vi.stubEnv("API_URL", "");
     vi.stubEnv("NEXT_PUBLIC_API_URL", "http://public.test");
     const spy = mockFetch({});
     await api.stats();
-    expect(requestedPath(spy)).toBe("/api/stats");
+    expect(requestedPath(spy)).toBe("http://public.test/api/stats");
+  });
+
+  it("falls back to localhost when both API_URL and NEXT_PUBLIC_API_URL are empty strings", async () => {
+    vi.stubEnv("API_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_API_URL", "   ");
+    const spy = mockFetch({});
+    await api.stats();
+    expect(requestedPath(spy)).toBe("http://127.0.0.1:8080/api/stats");
   });
 
   it("uses a same-origin relative path in the browser", async () => {

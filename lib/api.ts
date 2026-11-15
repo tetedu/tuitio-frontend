@@ -57,7 +57,9 @@ export interface Stats {
 // URL the backend sits behind.
 const baseUrl = () =>
   typeof window === "undefined"
-    ? (process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8080")
+    ? (process.env.API_URL?.trim() ||
+        process.env.NEXT_PUBLIC_API_URL?.trim() ||
+        "http://127.0.0.1:8080")
     : "";
 
 async function get<T>(path: string): Promise<T> {
