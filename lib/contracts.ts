@@ -24,6 +24,12 @@ export interface TuitioEscrow {
     release: boolean;
   }) => Promise<contract.AssembledTransaction<void>>;
   cancel_grant: (args: { grant_id: number }) => Promise<contract.AssembledTransaction<void>>;
+  /// Permissionless batch settlement for up to 20 grants whose current term is
+  /// attested and past its dispute window. Entries that cannot settle are
+  /// skipped on-chain; resolves to the number of terms released.
+  sweep: (args: {
+    grant_ids: Array<number | bigint>;
+  }) => Promise<contract.AssembledTransaction<contract.Result<number> | number>>;
   /// Read-only: the escrow's configuration, including the admin who resolves
   /// disputes. Simulated rather than submitted, so it costs nothing.
   get_config: () => Promise<
