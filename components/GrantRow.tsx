@@ -1,9 +1,11 @@
 import Link from "next/link";
 import type { Grant } from "@/lib/api";
-import { env } from "@/lib/env";
-import { formatAmount, GRANT_STATUS_LABEL, shortAddress } from "@/lib/format";
+import { GRANT_STATUS_LABEL, shortAddress } from "@/lib/format";
+import { formatTokenAmount, getTokenMetadata } from "@/lib/token";
 
-export function GrantRow({ grant }: { grant: Grant }) {
+export async function GrantRow({ grant }: { grant: Grant }) {
+  const token = await getTokenMetadata(grant.token);
+
   return (
     <Link
       href={`/grants/${grant.grant_id}`}
@@ -27,7 +29,7 @@ export function GrantRow({ grant }: { grant: Grant }) {
         <div>
           <dt className="text-xs">Per term</dt>
           <dd className="font-mono text-neutral-200">
-            {formatAmount(grant.term_amount, env.tokenDecimals, env.tokenSymbol)}
+            {formatTokenAmount(grant.term_amount, token)}
           </dd>
         </div>
         <div>
@@ -43,7 +45,7 @@ export function GrantRow({ grant }: { grant: Grant }) {
         <div>
           <dt className="text-xs">In escrow</dt>
           <dd className="font-mono text-neutral-200">
-            {formatAmount(grant.locked_amount, env.tokenDecimals, env.tokenSymbol)}
+            {formatTokenAmount(grant.locked_amount, token)}
           </dd>
         </div>
       </dl>

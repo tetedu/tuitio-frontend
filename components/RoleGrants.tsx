@@ -7,9 +7,10 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { api, type Grant, type Term } from "@/lib/api";
-import { env } from "@/lib/env";
-import { formatAmount, GRANT_STATUS_LABEL, TERM_STATUS_LABEL } from "@/lib/format";
+import { GRANT_STATUS_LABEL, TERM_STATUS_LABEL } from "@/lib/format";
+import { formatTokenAmount } from "@/lib/token";
 import { DisputeWindow } from "./DisputeWindow";
+import { useTokenMetadata } from "./useTokenMetadata";
 
 export interface GrantWithTerms {
   grant: Grant;
@@ -62,6 +63,7 @@ export function GrantCard({
 }) {
   const { grant, terms } = row;
   const current = terms[grant.next_term];
+  const token = useTokenMetadata(grant.token);
 
   return (
     <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-4">
@@ -83,7 +85,7 @@ export function GrantCard({
         <div>
           <dt>Per term</dt>
           <dd className="font-mono text-neutral-200">
-            {formatAmount(grant.term_amount, env.tokenDecimals, env.tokenSymbol)}
+            {formatTokenAmount(grant.term_amount, token)}
           </dd>
         </div>
         <div>
@@ -95,7 +97,7 @@ export function GrantCard({
         <div>
           <dt>In escrow</dt>
           <dd className="font-mono text-neutral-200">
-            {formatAmount(grant.locked_amount, env.tokenDecimals, env.tokenSymbol)}
+            {formatTokenAmount(grant.locked_amount, token)}
           </dd>
         </div>
         <div>

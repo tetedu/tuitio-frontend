@@ -2,12 +2,15 @@
 
 import { useWallet } from "./WalletProvider";
 import { GrantCard, useRoleGrants } from "./RoleGrants";
-import { env } from "@/lib/env";
-import { formatAmount } from "@/lib/format";
+import { useTokenMetadataMap } from "./useTokenMetadata";
+import { formatTokenTotals } from "@/lib/token";
 
 export function SponsorPortfolio() {
   const { address, connect, connecting } = useWallet();
   const { rows, error } = useRoleGrants("sponsor", address);
+  const metadataByToken = useTokenMetadataMap(
+    (rows ?? []).map((r) => r.grant.token),
+  );
 
   if (!address) {
     return (
@@ -45,11 +48,14 @@ export function SponsorPortfolio() {
     );
   }
 
-  const committed = rows.reduce(
-    (sum, r) => sum + r.grant.term_amount * r.grant.terms_total,
-    0,
-  );
-  const escrowed = rows.reduce((sum, r) => sum + r.grant.locked_amount, 0);
+  const committedItems = rows.map((r) => ({
+    token: r.grant.token,
+    amount: r.grant.term_amount * r.grant.terms_total,
+  }));
+  const escrowedItems = rows.map((r) => ({
+    token: r.grant.token,
+    amount: r.grant.locked_amount,
+  }));
   // A term the institution has claimed but that has not yet released is the
   // only thing a sponsor can still act on.
   const openClaims = rows.filter(
@@ -62,11 +68,11 @@ export function SponsorPortfolio() {
         <Stat label="Grants" value={String(rows.length)} />
         <Stat
           label="Total committed"
-          value={formatAmount(committed, env.tokenDecimals, env.tokenSymbol)}
+          value={formatTokenTotals(committedItems, metadataByToken)}
         />
         <Stat
           label="Still in escrow"
-          value={formatAmount(escrowed, env.tokenDecimals, env.tokenSymbol)}
+          value={formatTokenTotals(escrowedItems, metadataByToken)}
         />
         <Stat label="Open claims" value={String(openClaims)} />
       </div>
